@@ -22,7 +22,7 @@ def eliminasi_gauss(A, b):
   print(Ab)
   print("=" * 45)
 
-  # LANGKAH 2: ELIMINASI MAJU (Forward Elimination)
+  # LANGKAH 2: ELIMINASI MAJU 
   # Tujuan: ubah matriks jadi segitiga atas
   # (semua angka di bawah diagonal utama jadi 0)
   for i in range(n):  # i = kolom/baris pivot yang sedang diproses
@@ -50,7 +50,7 @@ def eliminasi_gauss(A, b):
     print(Ab)
     print("-" * 45)
 
-  # LANGKAH 3: SUBSTITUSI MUNDUR (Back Substitution)
+  # LANGKAH 3: SUBSTITUSI MUNDUR 
   # Matriks sudah segitiga atas, jadi variabel dicari dari baris paling bawah ke atas (x3 dulu, lalu x2, lalu x1)
   x = np.zeros(n)  # tempat menyimpan hasil solusi
   for i in range(n - 1, -1, -1):  # loop mundur: n-1, ..., 1, 0
