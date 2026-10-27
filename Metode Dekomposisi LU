@@ -1,0 +1,86 @@
+import numpy as np
+
+# DATA: Sistem Persamaan Linear (SPL) Ax = b
+#   3x1 + 1x2 - 4x3 = 7
+#  -2x1 + 3x2 + 1x3 = -5
+#   2x1 + 0x2 + 5x3 = 10
+
+A = np.array([[3.0, 1.0, -4.0],
+              [-2.0, 3.0, 1.0],
+              [2.0, 0.0, 5.0]])   # matriks koefisien
+
+b = np.array([7.0, -5.0, 10.0])   # vektor konstanta (ruas kanan)
+
+
+def lu_decomposition(A, b):
+  n = len(b)  # jumlah persamaan / variabel
+
+  # LANGKAH 1: DEKOMPOSISI LU (metode Doolittle)
+  # Tujuan: pecah A menjadi A = L . U
+  #   L = matriks segitiga bawah (diagonal utamanya bernilai 1)
+  #   U = matriks segitiga atas
+  L = np.zeros((n, n))  # siapkan matriks L kosong (isi nol)
+  U = np.zeros((n, n))  # siapkan matriks U kosong (isi nol)
+
+  # Loop ini membangun U dan L secara bergantian, baris ke-i untuk U
+  # dan kolom ke-i untuk L, dari i = 0 sampai n-1
+  for i in range(n):
+
+    # Ciri metode Doolittle: diagonal utama L selalu 1
+    L[i, i] = 1.0
+
+    # --- Hitung BARIS ke-i dari matriks U ---
+    for j in range(i, n):  # mulai dari diagonal ke kanan
+      # soma = jumlah L[i,k] * U[k,j] dari bagian yang sudah dihitung
+      soma = sum(L[i, k] * U[k, j] for k in range(i))
+      # Rumus: U[i,j] = A[i,j] - soma
+      U[i, j] = A[i, j] - soma
+
+    # --- Hitung KOLOM ke-i dari matriks L ---
+    for j in range(i + 1, n):  # hanya elemen di bawah diagonal
+      soma = sum(L[j, k] * U[k, i] for k in range(i))
+
+      # Cek pivot U[i,i]: kalau 0, tidak bisa dibagi
+      # (kode ini belum pakai pivoting / tukar baris)
+      if U[i, i] == 0:
+        raise ValueError("Pivot nol ditemukan, dekomposisi LU gagal.")
+
+      # Rumus: L[j,i] = (A[j,i] - soma) / U[i,i]
+      L[j, i] = (A[j, i] - soma) / U[i, i]
+
+  # Tampilkan hasil dekomposisi (dibulatkan 4 digit supaya rapi)
+  print("=== Matriks L (Lower) ===")
+  print(np.round(L, 4))
+  print("\n=== Matriks U (Upper) ===")
+  print(np.round(U, 4))
+  print("-" * 45)
+
+  # LANGKAH 2: SUBSTITUSI MAJU
+  # Selesaikan L.y = b untuk mencari vektor perantara y
+  # Karena L segitiga bawah, hitung dari y1 ke bawah (atas -> bawah)
+  # Tidak dibagi L[i,i] karena nilainya 1
+  y = np.zeros(n)
+  for i in range(n):
+    # jumlah L[i,k] * y[k] dari y yang sudah diketahui
+    soma = sum(L[i, k] * y[k] for k in range(i))
+    y[i] = b[i] - soma
+
+  # LANGKAH 3: SUBSTITUSI MUNDUR 
+  # Selesaikan U.x = y untuk mencari solusi akhir x
+  # Karena U segitiga atas, hitung dari x3 ke atas (bawah -> atas)
+  x = np.zeros(n)
+  for i in range(n - 1, -1, -1):  # loop mundur: n-1, ..., 1, 0
+    # jumlah U[i,k] * x[k] dari x yang sudah ketemu
+    soma = sum(U[i, k] * x[k] for k in range(i + 1, n))
+    x[i] = (y[i] - soma) / U[i, i]   # dibagi U[i,i] karena tidak bernilai 1
+
+  return y, x  # kembalikan vektor perantara y dan solusi x
+
+
+# MENJALANKAN PROGRAM & MENAMPILKAN HASIL
+y_vektor, hasil_solusi = lu_decomposition(A, b)
+
+print("\n=== Hasil Solusi Akhir ===")
+print(f"x1 = {hasil_solusi[0]:.4f}  (Pecahan: 260/81)")
+print(f"x2 = {hasil_solusi[1]:.4f}  (Pecahan: 19/81)")
+print(f"x3 = {hasil_solusi[2]:.4f}  (Pecahan: 58/81)")
